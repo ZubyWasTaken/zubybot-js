@@ -1,6 +1,8 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require("./config.json");
+const fs = require('fs');
+var json = JSON.parse(fs.readFileSync('colors.json', 'utf8'));
 
 client.on('ready', () => {
     client.user.setActivity('!help in #colors for help')
@@ -90,8 +92,6 @@ client.on("message", (message) => {
                     }
                 }
             }
-        }
-        if (message.author.id == config.zubyID) {
             if (message.content.startsWith(config.prefix + "deletecolor")) { // and if the message is !deletrcolor
                 inputCommand = "".concat(message.content.split('!deletecolor', 0))
 
@@ -127,20 +127,18 @@ client.on("message", (message) => {
                     }
                 }
             }
-
-
         }
         if (message.content.startsWith(config.prefix + "color")) { // and if the message is !deleterole
             inputCommand = "".concat(message.content.split('!color', 0))
 
             var inputCommand = message.content.split(" ")
 
-            if (inputCommand.length > 1) {
+            if (inputCommand.length > 2) {
                 message.channel.send("Too many arguments, please do !color <colorname>");
-            } else if (inputCommand.length < 1) {
+            } else if (inputCommand.length < 0) {
                 message.channel.send("Not enough arguments, please do !color <colorname>");
             } else {
-                var role = inputCommand[1];  // sets name of color that is to be deleted
+                var roleToGive = inputCommand[1];  // sets name of color that is to be deleted
 
             }
         }
