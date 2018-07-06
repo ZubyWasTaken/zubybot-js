@@ -66,12 +66,13 @@ client.on("message", (message) => {
                  */
                 function AddColor(colorName, colorHex) {
                     var oldJson = JSON.parse(fs.readFileSync('colors.json', 'utf8'));
+                    // oldJson['colors'].push({[colorName]: colorHex});
                     oldJson['colors'].push({[colorName]: colorHex});
                     var newJson = JSON.stringify(oldJson);
                     fs.writeFileSync('colors.json', newJson);
 
                     // Tells use the name of color they added and hex of that color
-                    message.channel.send("Added color " + colorName + " with hex value " + colorHex);
+                    message.channel.send("Added color **" + colorName + "** with hex value **" + colorHex + "**");
                 }
 
                 /*
@@ -81,13 +82,12 @@ client.on("message", (message) => {
                 var colorExist = GetColorIndex(colorName)
                 if (colorExist > -1) {
                     // Prints only if the color exists
-                    message.channel.send("This color already exists")
+                    message.channel.send("The color **" + colorName + "** already exists.")
                 } else if (colorExist == -1) {
                     /*
                     If color does not exist then execute AddColor function.
                     Passes in the name of color and hex.
                      */
-                    message.channel.send("This color DOES NOT exist.")
                     AddColor(colorName, colorHex)
                 }
             }
@@ -112,18 +112,16 @@ client.on("message", (message) => {
                 var colorExist = GetColorIndex(colorName)
                 if (colorExist == -1) {
                     // If the color does not exist, it does nothing i.e not delete anything
-                    message.channel.send("This color DOES NOT exists")
+                    message.channel.send("This color **" + colorName + "** doesn't exists.")
                 } else if (colorExist > -1) {
                     /*
                     If the color exists delete the position in the JSON.
                     Write the edited JSON to the same file, overwriting it.
                      */
-                    message.channel.send("This color ALREADY exists at position " + colorExist)
-                    message.channel.send("I am deleting color " + colorName)
                     json["colors"].splice(colorExist, 1); //delete the position where the color is
                     var newJson = JSON.stringify(json); // set to new json string
                     fs.writeFileSync('colors.json', newJson); //writes to new json file
-                    message.channel.send("i have deleted " + colorName + " at position " + colorExist) //outputs what color got deleted and position
+                    message.channel.send("I have deleted the color: **" + colorName + "**") //outputs what color got deleted and position
                 }
             }
         }
@@ -161,36 +159,35 @@ client.on("message", (message) => {
                 const fs = require('fs');
                 var json = JSON.parse(fs.readFileSync('colors.json', 'utf8')); // Opens json file to be read
                 for (var i = 0; i < json["colors"].length; i++) { //loops through the length of the json file
-                    if (Object.keys(json["colors"][i])[0] == color) { //checks if the name is in the array
+                    if (Object.keys(json["colors"][i])[1] == color) { //checks if the name is in the array
                         return Object.keys(json["colors"][i])[1];
                     }
+                    // only happens if the color does not exist
+                    return -1;
                 }
-                // only happens if the color does not exist
-                return -1;
+
+                var doesColorNameExist = DoesNameExist(roleToGive);
+
+                if (doesColorNameExist == -1) {
+                    // If the color does not exist, it does nothing i.e not delete anything
+                    message.channel.send("This color name does not exist")
+
+                } else if (doesColorNameExist == roleToGive) {
+                    message.channel.send("This color name does exist")
+                    var hexColor = DoesColorExist(roleToGive)
+                    message.channel.send(hexColor)
+                }
+
+
+                // message.member.guild.createRole({
+                //     name: `${roleToGive}`,
+                //     color: `0X${color}`,
+                //     permissons: []
+                // }).then(function(role){
+                //    message.member.addRole(role);
+                // });
+
             }
-
-            var doesColorNameExist = DoesNameExist(roleToGive);
-
-            if (doesColorNameExist == -1) {
-                // If the color does not exist, it does nothing i.e not delete anything
-                message.channel.send("This color name does not exist")
-
-            } else if (doesColorNameExist > -1) {
-                message.channel.send("This color name does exist")
-                var hexColor = DoesColorExist(roleToGive)
-                message.channel.send(hexColor)
-            }
-
-
-
-            // message.member.guild.createRole({
-            //     name: `${roleToGive}`,
-            //     color: `0X${color}`,
-            //     permissons: []
-            // }).then(function(role){
-            //    message.member.addRole(role);
-            // });
-
         }
     }
 }); //end of client.on("message", (message)
