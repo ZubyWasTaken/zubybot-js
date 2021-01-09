@@ -1,0 +1,5 @@
+✔  add color to json
+✔  delete color from json
+✖  apply colour to user
+✔  return image of any hex user specifies 
+✖  clear directory of images folder

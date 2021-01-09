@@ -8,25 +8,62 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require("./config.json");
 const fs = require('fs');
+const request = require('request');
 
 
 client.on('ready', () => {
-    client.user.setActivity('!help in #colors for help')
+    client.user.setActivity('?help in #colors for help')
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
 
-const helpEmbed = new Discord.RichEmbed()
+const helpEmbed = new Discord.MessageEmbed()
     .setTitle("Help Commands")
     .setAuthor("Zuby", "https://i.imgur.com/jqIsh9f.png")
     .setColor(0x00AE86)
-    .setDescription("Type !color <name> to set your color\n\n" +
+    .setDescription("Type ?color <name> to set your color\n\n" +
         "**Admin Commands**\n" +
-        "!addcolor <hex number> <name>\n" +
-        "!delcolor <name>")
+        "?addcolor <hex number> <name>\n" +
+        "?delcolor <name>")
     .setFooter("zuby-bot", "https://i.imgur.com/jqIsh9f.png")
     .setTimestamp()
 
+const colorEmbed = new Discord.MessageEmbed()
+    .setTitle("Color")
+    .setAuthor("Zuby", "https://i.imgur.com/jqIsh9f.png")
+    .setColor(0xff0000)
+    .setDescription("What the colour will look like.")
+    .setFooter("zuby-bot", "https://i.imgur.com/jqIsh9f.png")
+    .setTimestamp()
+
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+var download = function (uri, filename, callback) {
+    request.head(uri, function (err, res, body) {
+        console.log('content-type:', res.headers['content-type']);
+        console.log('content-length:', res.headers['content-length']);
+
+        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    });
+}
+
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 
 client.on("message", (message) => {
     // Exit and stop if it's not there
@@ -37,58 +74,88 @@ client.on("message", (message) => {
     if (message.content.startsWith(config.prefix + "help")) {
         message.channel.send(helpEmbed);
     }
-    if (message.author.id == config.zubyID) {
+    // if (message.author.id == config.zubyID) {
 
 
 
-        if (message.content.startsWith(config.prefix + "addcolor")) {
-            inputCommand = "".concat(message.content.split('!addcolor ', 0))
+    if (message.content.startsWith(config.prefix + "addcolor")) {
+        inputCommand = "".concat(message.content.split('!addcolor', 0))
 
-            var inputCommand = message.content.split(" ")
+        var inputCommand = message.content.split(" ")
 
-            if (inputCommand.length > 3) {
-                message.channel.send("Too many arguments, please do !addcolor <hex> <colorname>");
-            } else if (inputCommand.length < 3) {
-                message.channel.send("Not enough arguments, please do !addcolor <hex> <colorname>");
+        if (inputCommand.length > 3) {
+            message.channel.send("Too many arguments, please do ?addcolor <hex> <colorname>");
+        } else if (inputCommand.length < 3) {
+            message.channel.send("Not enough arguments, please do ?addcolor <hex> <colorname>");
+        } else {
+            var colorHex = inputCommand[1]; // sets hex of color
+            var colorName = inputCommand[2].toLowerCase(); // sets name of color
+
+
+
+            var doesExist = doesColorExist(colorName);
+
+
+            // console.log(doesExist);
+
+            if (doesExist == true) {
+                message.channel.send("The color **" + colorName + "** is already added.");
             } else {
-                var colorHex = inputCommand[1]; // sets hex of color
-                var colorName = inputCommand[2].toLowerCase(); // sets name of color
-
-
-
-                var doesExist = doesColorExist(colorName);
-
-
-                // console.log(doesExist);
-
-                if (doesExist == true) {
-                    message.channel.send("The color **" + colorName + "** is already added.");
+                message.channel.send("The color **" + colorName + "** is not in the list of colors.");
+                var colourAdded = AddColor(colorName, colorHex)
+                if (colourAdded == true) {
+                    message.channel.send("Added color **" + colorName + "** with hex value **" + colorHex + "**.");
                 } else {
-                    message.channel.send("The color **" + colorName + "** is not in the list of colors.");
-                    var colourAdded = AddColor(colorName, colorHex)
-                    if (colourAdded == true) {
-                        message.channel.send("Added color **" + colorName + "** with hex value **" + colorHex + "**.");
-                    } else {
-                        message.channel.send("Failed to add color " + colorName + ". Contact admin.")
-                    }
+                    message.channel.send("Failed to add color " + colorName + ". Contact admin.")
                 }
             }
         }
     }
+
+    if (message.content.startsWith(config.prefix + "whatcolor")) {
+        inputCommand = "".concat(message.content.split('?whatcolor', 0))
+
+        var inputCommand = message.content.split(" ")
+
+        if (inputCommand.length > 2) {
+            message.channel.send("Too many arguments, please do ?whatcolor <hexcode>");
+        } else if (inputCommand.length < 2) {
+            message.channel.send("Not enough arguments, please do ?whatcolor <hexcode>");
+        } else {
+            let authorId = message.author.id;
+            let mentionString = '<@!' + authorId + '>';
+
+            let authorHex = inputCommand[1].substring(1);
+
+            let randomFileName = makeid(5)
+
+            download('https://singlecolorimage.com/get/' + authorHex + '/50x50', "./images/" + randomFileName + '.png', function () {
+                console.log('downloaded successfully')
+                message.channel.send(mentionString, { files: ["./images/" + randomFileName + ".png"] });
+
+            })
+
+
+
+        }
+
+    }
+
+    // }
 
 
 
 
 
     if (message.content.startsWith(config.prefix + "delcolor")) {
-        inputCommand = "".concat(message.content.split('!delcolor', 0))
+        inputCommand = "".concat(message.content.split('?delcolor', 0))
 
         var inputCommand = message.content.split(" ")
 
         if (inputCommand.length > 2) {
-            message.channel.send("Too many arguments, please do !delcolor <colorname>");
+            message.channel.send("Too many arguments, please do ?delcolor <colorname>");
         } else if (inputCommand.length < 2) {
-            message.channel.send("Not enough arguments, please do !delcolor <colorname>");
+            message.channel.send("Not enough arguments, please do ?delcolor <colorname>");
         } else {
             var colorName = inputCommand[1];
 
@@ -114,14 +181,14 @@ client.on("message", (message) => {
 
 
     if (message.content.startsWith(config.prefix + "color")) {
-        inputCommand = "".concat(message.content.split('!color', 0))
+        inputCommand = "".concat(message.content.split('?color', 0))
 
         var inputCommand = message.content.split(" ")
 
         if (inputCommand.length > 2) {
-            message.channel.send("Too many arguments, please do !color <colorname>");
+            message.channel.send("Too many arguments, please do ?color <colorname>");
         } else if (inputCommand.length < 0) {
-            message.channel.send("Not enough arguments, please do !color <colorname>");
+            message.channel.send("Not enough arguments, please do ?color <colorname>");
         } else {
             var roleToGive = inputCommand[1];  // sets name of color that is to be deleted
             message.channel.send(roleToGive);
