@@ -1,0 +1,24 @@
+{
+  "name": "zubybot",
+  "version": "1.0.0",
+  "description": "Discord.JS Color bot",
+  "main": "bot.js",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "run": "node bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZubyWasTaken/zubybot-js.git"
+  },
+  "author": "ZubyWasTaken",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ZubyWasTaken/zubybot-js/issues"
+  },
+  "homepage": "https://github.com/ZubyWasTaken/zubybot-js#readme"
+}
